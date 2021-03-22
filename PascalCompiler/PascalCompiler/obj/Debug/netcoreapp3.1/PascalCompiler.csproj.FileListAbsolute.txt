@@ -1,0 +1,15 @@
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\obj\Debug\netcoreapp3.1\PascalCompiler.csprojAssemblyReference.cache
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\obj\Debug\netcoreapp3.1\PascalCompiler.csproj.GenerateResource.cache
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\obj\Debug\netcoreapp3.1\PascalCompiler.AssemblyInfoInputs.cache
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\obj\Debug\netcoreapp3.1\PascalCompiler.AssemblyInfo.cs
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\obj\Debug\netcoreapp3.1\PascalCompiler.csproj.CoreCompileInputs.cache
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\bin\Debug\netcoreapp3.1\PascalCompiler.exe
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\bin\Debug\netcoreapp3.1\PascalCompiler.deps.json
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\bin\Debug\netcoreapp3.1\PascalCompiler.runtimeconfig.json
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\bin\Debug\netcoreapp3.1\PascalCompiler.runtimeconfig.dev.json
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\bin\Debug\netcoreapp3.1\PascalCompiler.dll
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\bin\Debug\netcoreapp3.1\PascalCompiler.pdb
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\obj\Debug\netcoreapp3.1\PascalCompiler.Form1.resources
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\obj\Debug\netcoreapp3.1\PascalCompiler.dll
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\obj\Debug\netcoreapp3.1\PascalCompiler.pdb
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\obj\Debug\netcoreapp3.1\PascalCompiler.genruntimeconfig.cache
