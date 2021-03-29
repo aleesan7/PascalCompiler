@@ -161,8 +161,8 @@ namespace PascalCompiler.Analysers
             variable_definition_part.Rule = MakePlusRule(variable_definition_part, variable_definition)
                                    | Empty;
 
-            variable_definition.Rule = VAR + declaracion + SEMICOLON
-                               | VAR + declaracion + EQUAL + const_values + SEMICOLON;
+            variable_definition.Rule = VAR + lista_identificadores + COLON + tipo + SEMICOLON
+                               | VAR + identifier + COLON + tipo + EQUAL + expresion + SEMICOLON;
             variable_definition.ErrorRule = SyntaxError + SEMICOLON;
 
             procedure_and_function_declaration_part.Rule = proc_or_func_declaration_list
@@ -195,8 +195,8 @@ namespace PascalCompiler.Analysers
                     | SyntaxError + VAR
                     | SyntaxError + COLON;
 
-            lista_identificadores.Rule = lista_identificadores + COMMA + identifier
-                                | identifier;
+            lista_identificadores.Rule = MakePlusRule(lista_identificadores, COMMA, identifier)
+                                | Empty;
             lista_identificadores.ErrorRule = SyntaxError + COMMA;
 
             declaracion.Rule = identifier + COLON + tipo //{:RESULT = new Declaracion(b, a);:}

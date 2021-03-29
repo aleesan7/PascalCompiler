@@ -2,6 +2,7 @@
 //using CompiPascal.Analysers;
 //using CompiPascal.Utils;
 //using graphviz_cSharp.external;
+using PascalCompiler.Analysers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -201,6 +202,12 @@ namespace PascalCompiler
 
         private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
+            switch (e.ClickedItem.Text) 
+            {
+                case "&Execute":
+                    Execute();
+                    break;
+            }
             //switch (e.ClickedItem.Text) 
             //{
             //    case "&Execute":
@@ -255,37 +262,37 @@ namespace PascalCompiler
 
         private void Execute() 
         {
-            //string inputString = txtInputEditor.Text.ToString();
+            string inputString = txtInputEditor.Text.ToString();
 
-            //Syntax syntax = new Syntax();
-            //syntax.Analyze(inputString);
+            Analyzer syntax = new Analyzer();
+            syntax.Analyze(inputString);
 
-            //txtOutputEditor.Text = "";
+            txtOutputEditor.Text = "";
 
-            //if (!syntax.syntacticErrorsFound)
-            //{
-            //    this.globalEnv = syntax.globalEnv;
-            //    string text = File.ReadAllText("results.txt");
-            //    txtOutputEditor.Text = text;
+            if (!syntax.syntacticErrorsFound)
+            {
+                //    this.globalEnv = syntax.globalEnv;
+                string text = File.ReadAllText("C3D.txt");
+                txtOutputEditor.Text = text;
 
-            //    File.Create("results.txt").Close();
+                File.Create("C3D.txt").Close();
 
-            //    if (syntax.errorsList.Count > 0)
-            //    {
-            //        foreach (PascalError error in syntax.errorsList)
-            //        {
-            //            txtOutputEditor.Text += error.GetMesage();
-            //            txtOutputEditor.Text += Environment.NewLine;
-            //        }
+                //    if (syntax.errorsList.Count > 0)
+                //    {
+                //        foreach (PascalError error in syntax.errorsList)
+                //        {
+                //            txtOutputEditor.Text += error.GetMesage();
+                //            txtOutputEditor.Text += Environment.NewLine;
+                //        }
 
-            //        GenerateSemanticErrors(syntax.errorsList);
-            //    }
-            //}
-            //else
-            //{
-            //    MessageBox.Show("Syntax errors found, please verify the syntax errors report.");
-            //}
-        }
+                //        GenerateSemanticErrors(syntax.errorsList);
+                //    }
+            }
+        //else
+        //{
+        //    MessageBox.Show("Syntax errors found, please verify the syntax errors report.");
+        //}
+    }
 
         private void Translate() 
         {
