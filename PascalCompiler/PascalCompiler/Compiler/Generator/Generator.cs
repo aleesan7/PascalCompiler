@@ -16,7 +16,7 @@ namespace PascalCompiler.Compiler.Generator
 
         private Generator() 
         {
-            this.temporal = this.label = 0;
+            this.temporal = this.label = 10;
             this.code = new List<string>();
             this.tempStorage = new HashSet<string>();
         }
@@ -30,6 +30,14 @@ namespace PascalCompiler.Compiler.Generator
             return generator;
         }
 
+        public void ResetGenerator() 
+        {
+            this.temporal = this.label = 10;
+            this.code.Clear();
+            this.tempStorage.Clear();
+            this.isFunc = "";
+        }
+
         public void FreeTemp(string temp) 
         {
             if (this.tempStorage.Contains(temp)) 
@@ -38,10 +46,14 @@ namespace PascalCompiler.Compiler.Generator
             }
         }
 
-        public void AddPrintln(string format, object value)
+        public void AddPrintf(string format, object value)
         {
             this.code.Add($"{this.isFunc}printf(\"%{format}\"," +$"{value});");
-            //this.code.push(`${ this.isFunc}print("%${format}",${ value});`);
+        }
+
+        public void AddPrintfNewLine(string format, string value) 
+        {
+            this.code.Add($"{this.isFunc}printf(\"%{format}\"," + $"\"{value}\");");
         }
 
         public void AddComment(string comment)
@@ -61,12 +73,12 @@ namespace PascalCompiler.Compiler.Generator
 
         public void AddSetHeap(object index, object value) 
         {
-            this.code.Add($"{ this.isFunc}Heap[" + $"{ index}] =" + $"{ value};");
+            this.code.Add($"{ this.isFunc}Heap[" + $"(int){ index}] =" + $"{ value};");
         }
 
         public void AddGetHeap(object target, object index)
         {
-            this.code.Add($"{ this.isFunc}" + $"{ target}" + "= Heap[" + $"{ index}];");
+            this.code.Add($"{ this.isFunc}" + $"{ target}" + "= Heap[" + $"(int){ index}];");
         }
 
         public void AddExpression(string target, Object left, Object right, string op) 
@@ -89,6 +101,48 @@ namespace PascalCompiler.Compiler.Generator
             this.code.Add($"{this.isFunc}" + $"{ label}:");
         }
 
+        public void AddCall(string id)
+        {
+            this.code.Add($"{this.isFunc}" + $"{ id}();");
+        }
+
+        public void AddPrint(string format, object value) 
+        {
+            this.code.Add($"{this.isFunc}printf(\"%" + $"{format}\"" + "," + $"{value});");
+        }
+
+        public void AddCode(string code) 
+        {
+            this.code.Add(code);
+        }
+
+        public void AddPrintTrue() 
+        {
+            this.AddPrint("c", (int)'t');
+            this.AddPrint("c", (int)'r');
+            this.AddPrint("c", (int)'u');
+            this.AddPrint("c", (int)'e');
+        }
+
+        public void AddPrintFalse()
+        {
+            this.AddPrint("c", (int)'f');
+            this.AddPrint("c", (int)'a');
+            this.AddPrint("c", (int)'l');
+            this.AddPrint("c", (int)'s');
+            this.AddPrint("c", (int)'e');
+        }
+
+        public void AddNextEnv(int size)
+        {
+            this.code.Add($"{ this.isFunc}p = p + " + $"{size};");
+        }
+
+        public void addAntEnv(int size)
+        {
+            this.code.Add($"{ this.isFunc}p = p - " + $"{ size};");
+        }
+
         public string NewTemporal()
         {
             string temp = "T" + this.temporal++;
@@ -101,6 +155,31 @@ namespace PascalCompiler.Compiler.Generator
         public string NewLabel() 
         {
             return "L" + this.label++;
+        }
+
+        public void NextHeap() 
+        {
+            this.code.Add(this.isFunc + "h = h + 1;");
+        }
+
+        public List<string> GetCode() 
+        {
+            return this.code;
+        }
+
+        public void SetCode(List<string> code) 
+        {
+            this.code = code;
+        }
+
+        public int GetTempAmount() 
+        {
+            return this.temporal;
+        }
+
+        public int GetLabelAmount() 
+        {
+            return this.label;
         }
 
         public void ExportC3D()

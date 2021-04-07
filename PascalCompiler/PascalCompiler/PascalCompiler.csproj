@@ -7,9 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Native\**" />
+    <EmbeddedResource Remove="Native\**" />
+    <None Remove="Native\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Irony">
       <HintPath>..\..\..\..\..\..\..\compiladores2\Irony.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="concatProc.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="printStringProc.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

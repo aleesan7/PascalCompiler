@@ -20,10 +20,13 @@ namespace PascalCompiler.Compiler.Expressions
         {
             var gen = Generator.Generator.GetInstance();
 
-            this.trueLabel = this.trueLabel == "" ? gen.NewLabel() : this.trueLabel;
-            this.falseLabel = this.falseLabel == "" ? gen.NewLabel() : this.falseLabel;
-
             this.left.trueLabel = gen.NewLabel();
+
+            this.falseLabel = this.falseLabel == "" ? gen.NewLabel() : this.falseLabel;
+            this.trueLabel = this.trueLabel == "" ? gen.NewLabel() : this.trueLabel;
+            
+
+            
             this.right.trueLabel = this.trueLabel;
             this.left.falseLabel = this.right.falseLabel = this.falseLabel;
 

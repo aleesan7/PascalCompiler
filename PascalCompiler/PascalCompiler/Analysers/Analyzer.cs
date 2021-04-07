@@ -15,6 +15,8 @@ namespace PascalCompiler.Analysers
     class Analyzer
     {
         public bool syntacticErrorsFound = false;
+        public List<string> code = new List<string>();
+
         public void Analyze(string input)
         {
 
@@ -56,8 +58,16 @@ namespace PascalCompiler.Analysers
         private void Compile(LinkedList<Instruction> instructionsList, LinkedList<Instruction> variableDeclaration)
         {
             Compiler.Environment global = new Compiler.Environment(null);
+            var gen = Generator.GetInstance();
 
-            foreach(var variable in variableDeclaration) 
+            this.code.Add("#include <stdio.h>");
+            this.code.Add("float Heap[100000];");
+            this.code.Add("float Stack[100000];");
+            this.code.Add("float s;");
+            this.code.Add("float h;");
+
+
+            foreach (var variable in variableDeclaration) 
             {
                 variable.Compile(global);
             }
@@ -67,9 +77,79 @@ namespace PascalCompiler.Analysers
                 instruction.Compile(global);
             }
 
-            var gen = Generator.GetInstance();
+            int tempQty = gen.GetTempAmount();
+            int labelQty = gen.GetLabelAmount();
+            string temporals = string.Empty;
+            //string labels = string.Empty;
+
+            temporals = "float ";
+
+            for(int i = 0; i < tempQty; i++) 
+            {
+                temporals = temporals + "T" + i + ", ";
+            }
+
+            temporals = temporals.Substring(0, temporals.Length - 2) + ";";
+            //for(int j = 0; j < labelQty; j++) 
+            //{
+            //    labels = labels + "L" + j + ", ";
+            //}
+            this.code.Add(temporals);
+
+            List<string> generatedCode = gen.GetCode();
+
+            SetNativeProcs();
+
+            this.code.Add("int main()");
+            this.code.Add("{");
+
+            foreach (string code in generatedCode) 
+            {
+                this.code.Add(code);
+            }
+
+            this.code.Add("return 0;");
+            this.code.Add("}");
+
+            gen.SetCode(this.code);
 
             gen.ExportC3D();
+
+            gen.ResetGenerator();
+        }
+
+        public void SetNativeProcs()
+        {
+            try
+            {
+
+                if (File.Exists("concatProc.txt"))
+                {
+                    // Read a text file line by line.  
+                    string[] lines = File.ReadAllLines("concatProc.txt");
+                    foreach (string line in lines)
+                    {
+                        this.code.Add(line);
+                    }
+                }
+
+
+                if (File.Exists("printStringProc.txt"))
+                {
+                    // Read a text file line by line.  
+                    string[] lines = File.ReadAllLines("printStringProc.txt");
+                    foreach (string line in lines)
+                    {
+                        this.code.Add(line);
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+
         }
 
         private LinkedList<Instruction> instructions(ParseTreeNode actual)
@@ -111,7 +191,8 @@ namespace PascalCompiler.Analysers
             switch (operationToken)
             {
                 case "writeln":
-                    //return new Writeln(expressions(actual.ChildNodes[2]));
+                    return new Writeln(expression(actual.ChildNodes[2].ChildNodes[0]), false, actual.Span.Location.Line, actual.Span.Location.Column);
+                case "write":
                     return new Writeln(expression(actual.ChildNodes[2].ChildNodes[0]), false, actual.Span.Location.Line, actual.Span.Location.Column);
                 case "var":
                     if (actual.ChildNodes.Count == 5)
@@ -158,6 +239,29 @@ namespace PascalCompiler.Analysers
                     }
                 case "while":
                     return new While(expression(actual.ChildNodes[1]), ListOfSentences(actual.ChildNodes[4]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                case "repeat":
+                    return new Repeat(expression(actual.ChildNodes[3]), ListOfSentences(actual.ChildNodes[1]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                case "for":
+                    //if (actual.ChildNodes[5].Term.Name.ToString().Equals("downto"))
+                    //{
+                    //    return new For(new Assign(actual.ChildNodes[1].Token.Text, expression(actual.ChildNodes[4])),
+                    //                new LogicOperation(new Literal(Types.IDENTIFIER, actual.ChildNodes[1].Token.Text), expression(actual.ChildNodes[6]) /*(newLiteralWithSetedValue(actual.ChildNodes[6])*/, ">=", actual.ChildNodes[1].Span.Location.Line, actual.ChildNodes[1].Span.Location.Column),
+                    //                new Assign(actual.ChildNodes[1].Token.Text, new ArithmeticOperation(new Literal(Types.IDENTIFIER, actual.ChildNodes[1].Token.Text), new Literal(Types.INTEGER, (object)"1"), "-", actual.ChildNodes[1].Span.Location.Line, actual.ChildNodes[1].Span.Location.Column)),
+                    //                instructions(actual.ChildNodes[9]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                    //}
+                    //else
+                    {
+                        return new For(new Assignment( new AccessId(actual.ChildNodes[1].Token.Text, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), expression(actual.ChildNodes[4]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column),
+                                    new Smaller(new AccessId(actual.ChildNodes[1].Token.Text, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), expression(actual.ChildNodes[6]), true, actual.ChildNodes[1].Span.Location.Line, actual.ChildNodes[1].Span.Location.Column),
+                                    new Assignment(new AccessId(actual.ChildNodes[1].Token.Text, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), new Plus(new AccessId(actual.ChildNodes[1].Token.Text, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), new Literal(Types.INTEGER, (object)"1", actual.ChildNodes[1].Span.Location.Line, actual.ChildNodes[1].Span.Location.Column), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column),
+                                    ListOfSentences(actual.ChildNodes[9]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                    }
+                case "case_statement":
+                    return new Case(expression(actual.ChildNodes[0].ChildNodes[1]), caseelements(actual.ChildNodes[0].ChildNodes[3]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                case "break":
+                    return new Break(actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                case "continue":
+                    return new Continue(actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
                 default:
                     if(actual.ChildNodes.Count == 5 || actual.ChildNodes.Count == 4) 
                     {
@@ -216,7 +320,7 @@ namespace PascalCompiler.Analysers
                             case "integer":
                                 return new Literal(Types.INTEGER, (object)actual.ChildNodes[0].Token.Text, actual.Span.Location.Line, actual.Span.Location.Column);
                             case "string":
-                                return new Literal(Types.STRING, (object)actual.ChildNodes[0].Token.Text, actual.Span.Location.Line, actual.Span.Location.Column);
+                                return new Compiler.Expressions.String(new Compiler.Type(Types.STRING, null), actual.ChildNodes[0].Token.Text, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column); //new Literal(Types.STRING, (object)actual.ChildNodes[0].Token.Text, actual.Span.Location.Line, actual.Span.Location.Column);
                             case "real":
                                 return new Literal(Types.REAL, (object)actual.ChildNodes[0].Token.Text, actual.Span.Location.Line, actual.Span.Location.Column);
                             case "boolean":
@@ -249,6 +353,30 @@ namespace PascalCompiler.Analysers
                     }
                 }
             }
+        }
+
+        public LinkedList<CaseElement> caseelements(ParseTreeNode actual)
+        {
+            LinkedList<CaseElement> caseElementsList = new LinkedList<CaseElement>();
+            foreach (ParseTreeNode node in actual.ChildNodes)
+            {
+                caseElementsList.AddLast(caseElement(node));
+            }
+
+            return caseElementsList;
+        }
+
+        public CaseElement caseElement(ParseTreeNode actual)
+        {
+            if (actual.ChildNodes.Count > 5)
+            {
+                return new CaseElement(expression(actual.ChildNodes[0]), ListOfSentences(actual.ChildNodes[3]), false, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+            }
+            else
+            {
+                return new CaseElement(null, ListOfSentences(actual.ChildNodes[2]), true, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+            }
+
         }
 
         private Types GetVarType(string type)

@@ -42,36 +42,40 @@ namespace PascalCompiler.Compiler.Instructions
 
                 if (newVar.isGlobal) 
                 {
-                    //if (this.type.type == Types.BOOLEAN)
-                    //{
-                    //    const templabel = generator.newLabel();
-                    //    generator.addLabel(value.trueLabel);
-                    //    generator.addSetStack(newVar.position, '1');
-                    //    generator.addGoto(templabel);
-                    //    generator.addLabel(value.falseLabel);
-                    //    generator.addSetStack(newVar.position, '0');
-                    //    generator.addLabel(templabel);
-                    //}else{
-                    gen.AddSetStack(newVar.position, value.GetValue());
-                    //}
+                    if (this.type.type == Types.BOOLEAN)
+                    {
+                        string templabel = gen.NewLabel();
+                        gen.AddLabel(value.trueLabel);
+                        gen.AddSetStack(newVar.position, "1");
+                        gen.AddGoto(templabel);
+                        gen.AddLabel(value.falseLabel);
+                        gen.AddSetStack(newVar.position, "0");
+                        gen.AddLabel(templabel);
+                    }
+                    else
+                    {
+                        gen.AddSetStack(newVar.position, value.GetValue());
+                    }
                 }
                 else 
                 {
                     string temporal = gen.NewTemporal();
                     gen.FreeTemp(temporal);
                     gen.AddExpression(temporal, "p", newVar.position, "+");
-                    //if (this.type.type == Types.BOOLEAN)
-                    //{
-                    //    const templabel = generator.newLabel();
-                    //    generator.addLabel(value.trueLabel);
-                    //    generator.addSetStack(temp, '1');
-                    //    generator.addGoto(templabel);
-                    //    generator.addLabel(value.falseLabel);
-                    //    generator.addSetStack(temp, '0');
-                    //    generator.addLabel(templabel);
-                    //}else{
-                    gen.AddSetStack(temporal, value.GetValue());
-                    //}
+                    if (this.type.type == Types.BOOLEAN)
+                    {
+                        string templabel = gen.NewLabel();
+                        gen.AddLabel(value.trueLabel);
+                        gen.AddSetStack(temporal, "1");
+                        gen.AddGoto(templabel);
+                        gen.AddLabel(value.falseLabel);
+                        gen.AddSetStack(temporal, "0");
+                        gen.AddLabel(templabel);
+                    }
+                    else
+                    {
+                        gen.AddSetStack(temporal, value.GetValue());
+                    }
                 }
             }
 
