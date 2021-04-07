@@ -1,0 +1,26 @@
+void native_concat_str_str()
+{
+	//T1, T2, T3, T4
+	
+	T3 = h;
+	
+	L0:
+		T4 = Heap[(int)T1];
+		if (T4 == -1) goto L1;
+		Heap[(int)h] = T4;
+		T1 = T1 + 1;
+		h = h + 1;
+		goto L0;
+		
+	L1:
+		T4 = Heap[(int)T2];
+		if (T4 == -1) goto L2;
+		Heap[(int)h] = T4;
+		T2 = T2 + 1;
+		h = h + 1;
+		goto L1;
+		
+	L2:
+		Heap[(int)h] = -1;
+		h = h + 1;
+}
