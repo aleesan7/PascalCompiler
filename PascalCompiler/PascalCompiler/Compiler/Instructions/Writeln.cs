@@ -36,6 +36,7 @@ namespace PascalCompiler.Compiler.Instructions
                     gen.AddLabel(value.falseLabel);
                     gen.AddPrintFalse();
                     gen.AddLabel(tempLabel);
+                    gen.AddPrintfNewLine("s", "\\n");
                     break;
                 case Types.STRING:
                     //gen.AddNextEnv(env.size);

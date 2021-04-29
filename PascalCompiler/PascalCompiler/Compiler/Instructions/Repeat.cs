@@ -24,7 +24,7 @@ namespace PascalCompiler.Compiler.Instructions
             newEnv.continueVar = this.condition.trueLabel = gen.NewLabel();
             newEnv.breakVar = this.condition.falseLabel = gen.NewLabel();
 
-            gen.AddLabel(this.condition.trueLabel);
+            gen.AddLabel(this.condition.falseLabel);
 
             this.bodySentences.Compile(newEnv);
 
@@ -32,7 +32,7 @@ namespace PascalCompiler.Compiler.Instructions
 
             if(condition.type.type == Types.BOOLEAN) 
             {
-                gen.AddLabel(condition.falseLabel);
+                gen.AddLabel(condition.trueLabel);
                 gen.AddComment("finaliza repeat");
             }
             else 

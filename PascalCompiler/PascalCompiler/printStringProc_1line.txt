@@ -1,0 +1,15 @@
+void native_print_str_1line()
+{
+	//T1, T2, T3, T4
+	
+	
+	L3:
+		T6 = Heap[(int)T5];
+		if (T6 == -1) goto L4;
+		printf("%c", (char)T6);
+		T5 = T5 + 1;
+		goto L3;
+		
+	L4:
+		printf("%s", " ");
+}

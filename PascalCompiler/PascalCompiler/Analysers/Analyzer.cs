@@ -39,12 +39,12 @@ namespace PascalCompiler.Analysers
             {
                 generateGraph(root);
 
-                //LinkedList<Instruction> constantDefinition = instructions(root.ChildNodes[2].ChildNodes[0]);
+                LinkedList<Instruction> constantDefinition = instructions(root.ChildNodes[2].ChildNodes[0]);
                 LinkedList<Instruction> variableDeclaration = instructions(root.ChildNodes[2].ChildNodes[1]);
-                //LinkedList<Instruction> functionAndProcedureDeclaration = instructions(root.ChildNodes[2].ChildNodes[2].ChildNodes[0].ChildNodes[0]);
+                LinkedList<Instruction> functionAndProcedureDeclaration = instructions(root.ChildNodes[2].ChildNodes[2].ChildNodes[0].ChildNodes[0]);
                 LinkedList<Instruction> instructionsList = instructions(root.ChildNodes[2].ChildNodes[4]);
                 //execute(constantDefinition, variableDeclaration, functionAndProcedureDeclaration, instructionsList);
-                Compile(instructionsList, variableDeclaration);
+                Compile(constantDefinition,instructionsList, functionAndProcedureDeclaration, variableDeclaration);
 
             }
             else
@@ -55,30 +55,49 @@ namespace PascalCompiler.Analysers
 
         }
 
-        private void Compile(LinkedList<Instruction> instructionsList, LinkedList<Instruction> variableDeclaration)
+        private void Compile(LinkedList<Instruction> constants, LinkedList<Instruction> instructionsList, LinkedList<Instruction> functionAndProcedureDeclaration, LinkedList<Instruction> variableDeclaration)
         {
             Compiler.Environment global = new Compiler.Environment(null);
             var gen = Generator.GetInstance();
+            List<string> generatedCode = gen.GetCode();
+            List<string> generatedFuncCode = new List<string>();
 
             this.code.Add("#include <stdio.h>");
             this.code.Add("float Heap[100000];");
             this.code.Add("float Stack[100000];");
             this.code.Add("float s;");
             this.code.Add("float h;");
+            this.code.Add("float p;");
 
+            foreach (var constant in constants)
+            {
+                constant.Compile(global);
+            }
 
             foreach (var variable in variableDeclaration) 
             {
                 variable.Compile(global);
             }
 
-            foreach(var instruction in instructionsList) 
+            gen.funcCodeStartIndex = gen.GetCode().Count;
+
+            foreach(var funcOrProc in functionAndProcedureDeclaration) 
+            {
+                funcOrProc.Compile(global);
+            }
+
+            gen.funcCodeEndIndex = gen.GetCode().Count;
+
+            generatedFuncCode.AddRange(gen.GetCode().GetRange(gen.funcCodeStartIndex, gen.funcCodeEndIndex - gen.funcCodeStartIndex));
+
+            gen.GetCode().RemoveRange(gen.funcCodeStartIndex, gen.funcCodeEndIndex - gen.funcCodeStartIndex);
+
+            foreach (var instruction in instructionsList) 
             {
                 instruction.Compile(global);
             }
 
             int tempQty = gen.GetTempAmount();
-            int labelQty = gen.GetLabelAmount();
             string temporals = string.Empty;
             //string labels = string.Empty;
 
@@ -90,23 +109,21 @@ namespace PascalCompiler.Analysers
             }
 
             temporals = temporals.Substring(0, temporals.Length - 2) + ";";
-            //for(int j = 0; j < labelQty; j++) 
-            //{
-            //    labels = labels + "L" + j + ", ";
-            //}
+
             this.code.Add(temporals);
 
-            List<string> generatedCode = gen.GetCode();
-
             SetNativeProcs();
+
+            this.code.AddRange(generatedFuncCode);
 
             this.code.Add("int main()");
             this.code.Add("{");
 
-            foreach (string code in generatedCode) 
-            {
-                this.code.Add(code);
-            }
+            //foreach (string code in generatedCode) 
+            //{
+            //    this.code.Add(code);
+            //}
+            this.code.AddRange(generatedCode);
 
             this.code.Add("return 0;");
             this.code.Add("}");
@@ -133,6 +150,16 @@ namespace PascalCompiler.Analysers
                     }
                 }
 
+
+                if (File.Exists("printStringProc_1line.txt"))
+                {
+                    // Read a text file line by line.  
+                    string[] lines = File.ReadAllLines("printStringProc_1line.txt");
+                    foreach (string line in lines)
+                    {
+                        this.code.Add(line);
+                    }
+                }
 
                 if (File.Exists("printStringProc.txt"))
                 {
@@ -193,8 +220,42 @@ namespace PascalCompiler.Analysers
                 case "writeln":
                     return new Writeln(expression(actual.ChildNodes[2].ChildNodes[0]), false, actual.Span.Location.Line, actual.Span.Location.Column);
                 case "write":
-                    return new Writeln(expression(actual.ChildNodes[2].ChildNodes[0]), false, actual.Span.Location.Line, actual.Span.Location.Column);
+                    return new Write(expression(actual.ChildNodes[2].ChildNodes[0]), false, actual.Span.Location.Line, actual.Span.Location.Column);
                 case "var":
+                    if (actual.ChildNodes.Count == 5)
+                    {
+                        //Var declaration without explicit value specified (We assign a default value depending the type)
+                        return new Declare(new Compiler.Type(GetVarType(actual.ChildNodes[3].ChildNodes[0].Token.Text), null), newLiteralWithDefaultValue(actual.ChildNodes[3]), idList(actual.ChildNodes[1]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                        //return new Declare(actual.ChildNodes[1].ChildNodes[0].Token.Text.ToString(), expression(actual.ChildNodes[3]), new Interpreter.Type(GetVarType(actual.ChildNodes[1].ChildNodes[2].ChildNodes[0].Token.Text), null), false, actual.ChildNodes[1].ChildNodes[0].Span.Location.Line, actual.ChildNodes[1].ChildNodes[0].Span.Location.Column);
+                    }
+                    else
+                    {
+                        if (actual.ChildNodes.Count == 3)
+                        {
+                            if (actual.ChildNodes[1].ChildNodes.Count == 1)
+                            {
+                                string type = actual.ChildNodes[1].ChildNodes[0].ChildNodes[7].ChildNodes[0].Token.Text.ToString();
+
+                                //TODO ArrayDeclare
+                                return null;
+                                //return new ArrayDeclare(actual.ChildNodes[1].ChildNodes[0].ChildNodes[0].Token.Text.ToString(), new Interpreter.Type(GetVarType(type), null), ranges(actual.ChildNodes[1].ChildNodes[0].ChildNodes[4]), actual.ChildNodes[1].ChildNodes[0].ChildNodes[0].Span.Location.Line, actual.ChildNodes[1].ChildNodes[0].ChildNodes[0].Span.Location.Column);
+                            }
+                            else
+                            {
+                                return null;
+                                //return new Declare(actual.ChildNodes[1].ChildNodes[0].Token.Text.ToString(), newLiteralWithDefaultValue(actual.ChildNodes[1].ChildNodes[2]), new Interpreter.Type(GetVarType(actual.ChildNodes[1].ChildNodes[2].ChildNodes[0].Token.Text), null), false, actual.ChildNodes[1].ChildNodes[0].Span.Location.Line, actual.ChildNodes[1].ChildNodes[0].Span.Location.Column);
+                            }
+                        }
+                        else
+                        {
+                            //Declare of single variable with initial value (Note: Multiple declaration with init is not permited in original pascal)
+                            List<string> singleId = new List<string>();
+                            singleId.Add(actual.ChildNodes[1].Token.Text);
+
+                            return new Declare(new Compiler.Type(GetVarType(actual.ChildNodes[3].ChildNodes[0].Token.Text), null), expression(actual.ChildNodes[5]), singleId, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                        }
+                    }
+                case "const":
                     if (actual.ChildNodes.Count == 5)
                     {
                         //Var declaration without explicit value specified (We assign a default value depending the type)
@@ -251,9 +312,9 @@ namespace PascalCompiler.Analysers
                     //}
                     //else
                     {
-                        return new For(new Assignment( new AccessId(actual.ChildNodes[1].Token.Text, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), expression(actual.ChildNodes[4]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column),
+                        return new For(new Assignment( new AssignmentId(actual.ChildNodes[1].Token.Text, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), expression(actual.ChildNodes[4]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column),
                                     new Smaller(new AccessId(actual.ChildNodes[1].Token.Text, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), expression(actual.ChildNodes[6]), true, actual.ChildNodes[1].Span.Location.Line, actual.ChildNodes[1].Span.Location.Column),
-                                    new Assignment(new AccessId(actual.ChildNodes[1].Token.Text, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), new Plus(new AccessId(actual.ChildNodes[1].Token.Text, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), new Literal(Types.INTEGER, (object)"1", actual.ChildNodes[1].Span.Location.Line, actual.ChildNodes[1].Span.Location.Column), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column),
+                                    new Assignment(new AssignmentId(actual.ChildNodes[1].Token.Text, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), new Plus(new AccessId(actual.ChildNodes[1].Token.Text, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), new Literal(Types.INTEGER, (object)"1", actual.ChildNodes[1].Span.Location.Line, actual.ChildNodes[1].Span.Location.Column), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column),
                                     ListOfSentences(actual.ChildNodes[9]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
                     }
                 case "case_statement":
@@ -262,12 +323,129 @@ namespace PascalCompiler.Analysers
                     return new Break(actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
                 case "continue":
                     return new Continue(actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                case "exit":
+                    return new Exit(expression(actual.ChildNodes[2]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                case "function":
+                    if (actual.ChildNodes.Count == 12)
+                    {
+
+                        if (actual.ChildNodes[7].ChildNodes.Count > 0)
+                        {
+                            //function with local vars and instructions
+                            return new Function(actual.ChildNodes[1].Token.Text, null, instructions(actual.ChildNodes[7]), new Compiler.Type(GetVarType(actual.ChildNodes[5].ChildNodes[0].ChildNodes[0].Token.Text), null), ListOfSentences(actual.ChildNodes[9]), true, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                            //return new Function(actual.ChildNodes[1].Token.Text, GetFunctionType(actual.ChildNodes[5].ChildNodes[0].ChildNodes[0].Token.Text.ToString()), instructions(actual.ChildNodes[7]), instructions(actual.ChildNodes[9]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                        }
+                        else
+                        {
+                            //function with only instructions
+                            return new Function(actual.ChildNodes[1].Token.Text, null, null, new Compiler.Type(GetVarType(actual.ChildNodes[5].ChildNodes[0].ChildNodes[0].Token.Text), null), ListOfSentences(actual.ChildNodes[9]), true, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                            //return new Function(actual.ChildNodes[1].Token.Text, GetFunctionType(actual.ChildNodes[5].ChildNodes[0].ChildNodes[0].Token.Text.ToString()), instructions(actual.ChildNodes[9]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                        }
+
+                    }
+                    else
+                    {
+                        if (actual.ChildNodes[8].ChildNodes.Count > 0)
+                        {
+                            if (actual.ChildNodes[8].ChildNodes.Count > 0 && actual.ChildNodes[3].ChildNodes.Count == 0)
+                            {
+                                //function with local vars and instructions but no parameters
+                                //return new Function(actual.ChildNodes[1].Token.Text, GetFunctionType(actual.ChildNodes[6].ChildNodes[0].ChildNodes[0].Token.Text.ToString()), instructions(actual.ChildNodes[8]), instructions(actual.ChildNodes[10]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                                return new Function(actual.ChildNodes[1].Token.Text, null, instructions(actual.ChildNodes[8]), new Compiler.Type(GetVarType(actual.ChildNodes[6].ChildNodes[0].ChildNodes[0].Token.Text), null), ListOfSentences(actual.ChildNodes[10]), true, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                            }
+                            else
+                            {
+                                //function with local vars and parameters
+                                //return new Function(actual.ChildNodes[1].Token.Text, GetFunctionType(actual.ChildNodes[6].ChildNodes[0].ChildNodes[0].Token.Text.ToString()), instructions(actual.ChildNodes[8]), declares(actual.ChildNodes[3]), instructions(actual.ChildNodes[10]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                                return new Function(actual.ChildNodes[1].Token.Text, ParameterList(actual.ChildNodes[3]), instructions(actual.ChildNodes[8]), new Compiler.Type(GetVarType(actual.ChildNodes[6].ChildNodes[0].ChildNodes[0].Token.Text), null), ListOfSentences(actual.ChildNodes[10]), true, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                            }
+
+                        }
+                        else
+                        {
+                            //function with parameters and instructions
+                            //return new Function(actual.ChildNodes[1].Token.Text, GetFunctionType(actual.ChildNodes[6].ChildNodes[0].ChildNodes[0].Token.Text.ToString()), declares(actual.ChildNodes[3]), instructions(actual.ChildNodes[10]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                            return new Function(actual.ChildNodes[1].Token.Text, ParameterList(actual.ChildNodes[3]), null, new Compiler.Type(GetVarType(actual.ChildNodes[6].ChildNodes[0].ChildNodes[0].Token.Text), null), ListOfSentences(actual.ChildNodes[10]), true, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                        }
+                    }
+                case "procedure":
+                    if (actual.ChildNodes.Count == 10)
+                    {
+                        //Procedure with only instructions
+                        if (actual.ChildNodes[5].ChildNodes.Count == 0)
+                        {
+                            return new Function(actual.ChildNodes[1].Token.Text, null, null, new Compiler.Type(Types.VOID, null), ListOfSentences(actual.ChildNodes[7]), true, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                        }
+                        else
+                        {
+                            //Procedure with parameters but without local vars and instructions
+                            //if(actual.ChildNodes[3].ChildNodes.Count > 0 && actual.ChildNodes[6])
+                            return new Function(actual.ChildNodes[1].Token.Text, ParameterList(actual.ChildNodes[3]), instructions(actual.ChildNodes[5]), new Compiler.Type(Types.VOID, null), ListOfSentences(actual.ChildNodes[7]), true, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                        }
+
+                    }
+                    else
+                    {
+                        //Procedure with parameters, local variables and instructions
+                        return new Function(actual.ChildNodes[1].Token.Text, ParameterList(actual.ChildNodes[3]), instructions(actual.ChildNodes[6]), new Compiler.Type(Types.VOID, null), ListOfSentences(actual.ChildNodes[8]), true, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                    }
+                case "functionorprocedurecall":
+                    if (actual.ChildNodes[0].ChildNodes.Count == 4)
+                    {
+                        return new FuncProcCallInstruction(actual.ChildNodes[0].ChildNodes[0].Token.Text, null, null, actual.ChildNodes[0].ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].ChildNodes[0].Span.Location.Column);
+                    }
+                    else
+                    {
+                        //TODO procedure or function call with parameters
+                        return new FuncProcCallInstruction(actual.ChildNodes[0].ChildNodes[0].Token.Text, null, expressions(actual.ChildNodes[0].ChildNodes[2]), actual.ChildNodes[0].ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].ChildNodes[0].Span.Location.Column);
+                    }
                 default:
                     if(actual.ChildNodes.Count == 5 || actual.ChildNodes.Count == 4) 
                     {
-                        return new Assignment(new AccessId(actual.ChildNodes[0].Token.Text, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), expression(actual.ChildNodes[3]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                        return new Assignment(new AssignmentId(actual.ChildNodes[0].Token.Text, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), expression(actual.ChildNodes[3]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                        //return new Assignment(new AccessId(actual.ChildNodes[0].Token.Text, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column), expression(actual.ChildNodes[3]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
                     }
                     return null;
+            }
+        }
+
+        public LinkedList<Param> ParameterList(ParseTreeNode actual) 
+        {
+            LinkedList<Param> paramsList = new LinkedList<Param>();
+            foreach(ParseTreeNode node in actual.ChildNodes) 
+            {
+                paramsList.AddLast(declare(node));
+            }
+
+            return paramsList;
+        }
+
+        private Param declare(ParseTreeNode actual)
+        {
+            if (actual.ChildNodes.Count == 5)
+            {
+                return null; //new Declare(actual.ChildNodes[1].Token.Text, newLiteralWithDefaultValue(actual.ChildNodes[3]), new Interpreter.Type(GetVarType(actual.ChildNodes[3].ChildNodes[0].Token.Text), null), false, actual.ChildNodes[1].Span.Location.Line, actual.ChildNodes[1].Span.Location.Column);
+            }
+            else
+            {
+                if (actual.ChildNodes.Count == 4 && actual.ChildNodes[0].Token.Text.ToString().ToLower().Equals("var"))
+                {
+                    return null; //new Declare(actual.ChildNodes[1].Token.Text, newLiteralWithDefaultValue(actual.ChildNodes[3]), new Interpreter.Type(GetVarType(actual.ChildNodes[3].ChildNodes[0].Token.Text), null), false, actual.ChildNodes[1].Span.Location.Line, actual.ChildNodes[1].Span.Location.Column);
+                }
+                else
+                {
+                    if (actual.ChildNodes.Count == 4)
+                    {
+                        return new Param(actual.ChildNodes[0].Token.Text, new Compiler.Type(GetVarType(actual.ChildNodes[2].ChildNodes[0].Token.Text), null));// new Declare(actual.ChildNodes[0].Token.Text, newLiteralWithDefaultValue(actual.ChildNodes[2]), new Interpreter.Type(GetVarType(actual.ChildNodes[2].ChildNodes[0].Token.Text), null), false, actual.ChildNodes[1].Span.Location.Line, actual.ChildNodes[1].Span.Location.Column);
+                    }
+                    else
+                    {
+
+                        return new Param(actual.ChildNodes[0].Token.Text, new Compiler.Type(GetVarType(actual.ChildNodes[2].ChildNodes[0].Token.Text), null)); ;// new Declare(actual.ChildNodes[0].Token.Text, newLiteralWithDefaultValue(actual.ChildNodes[2]), new Interpreter.Type(GetVarType(actual.ChildNodes[2].ChildNodes[0].Token.Text), null), false, actual.ChildNodes[1].Span.Location.Line, actual.ChildNodes[1].Span.Location.Column);
+
+                    }
+                }
+
             }
         }
 
@@ -344,11 +522,12 @@ namespace PascalCompiler.Analysers
                     {
                         if (actual.ChildNodes[0].ChildNodes[2].ChildNodes.Count > 0)
                         {
-                            return null; // TODO new FunctionCallExpression(actual.ChildNodes[0].ChildNodes[0].Token.Text, expressions(actual.ChildNodes[0].ChildNodes[2]));
+
+                            return new FuncProcCall(actual.ChildNodes[0].ChildNodes[0].Token.Text, null, expressions(actual.ChildNodes[0].ChildNodes[2]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column); // TODO new FunctionCallExpression(actual.ChildNodes[0].ChildNodes[0].Token.Text, expressions(actual.ChildNodes[0].ChildNodes[2]));
                         }
                         else
                         {
-                            return null; //TODO new FunctionCallExpression(actual.ChildNodes[0].ChildNodes[0].Token.Text);
+                            return new FuncProcCall(actual.ChildNodes[0].ChildNodes[0].Token.Text, null, null, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column); 
                         }
                     }
                 }

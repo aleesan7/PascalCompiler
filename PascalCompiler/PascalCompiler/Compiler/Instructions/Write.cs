@@ -37,7 +37,8 @@ namespace PascalCompiler.Compiler.Instructions
                     gen.AddLabel(tempLabel);
                     break;
                 case Types.STRING:
-                    gen.AddPrintf("s", value.GetValue());
+                    gen.AddExpression("T5", value.GetValue(), "", "");
+                    gen.AddCall("native_print_str_1line");
                     break;
                     //TODO throw semantic error on default
             }

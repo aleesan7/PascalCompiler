@@ -12,7 +12,9 @@ namespace PascalCompiler.Compiler.Generator
         private int label;
         private List<string> code;
         private HashSet<string> tempStorage;
-        string isFunc = "";
+        public string isFunc = "";
+        public int funcCodeStartIndex = 0;
+        public int funcCodeEndIndex = 0;
 
         private Generator() 
         {
@@ -46,6 +48,65 @@ namespace PascalCompiler.Compiler.Generator
             }
         }
 
+        public void SetTempStorage(HashSet<string> tempStorage)
+        {
+            this.tempStorage = tempStorage;
+        }
+
+        public int SaveTemps(Environment env) 
+        {
+            if(this.tempStorage.Count > 0) 
+            {
+                int size = 0;
+                string temp = this.NewTemporal();
+                this.FreeTemp(temp);
+
+                this.AddComment("Inicia guardado de temporales");
+                this.AddExpression(temp, "p", env.size, "+");
+
+                foreach(string str in this.tempStorage) 
+                {
+                    size++;
+                    this.AddSetStack(temp, str);
+                    if(size!= this.tempStorage.Count) 
+                    {
+                        this.AddExpression(temp, temp, "1", "+");
+                    }
+                }
+
+                this.AddComment("Finalzia guardado de temporales");
+            }
+
+            int pointer = env.size;
+            env.size = pointer + this.tempStorage.Count;
+
+            return pointer;
+        }
+
+        public void RecoverTemps(Environment env, int position) 
+        {
+            if(this.tempStorage.Count > 0) 
+            {
+                string temp = this.NewTemporal(); 
+                this.FreeTemp(temp);
+                int size = 0;
+
+                this.AddComment("Inicia recuperado de temporales");
+                this.AddExpression(temp, "p", position, "+");
+
+                foreach(string val in this.tempStorage) 
+                {
+                    size++;
+                    this.AddGetStack(val, temp);
+                    if (size != this.tempStorage.Count)
+                        this.AddExpression(temp, temp, "1", "+");
+                }
+
+                this.AddComment("Finaliza recuperado de temporales");
+                env.size = position;
+            }
+        }
+
         public void AddPrintf(string format, object value)
         {
             this.code.Add($"{this.isFunc}printf(\"%{format}\"," +$"{value});");
@@ -63,12 +124,12 @@ namespace PascalCompiler.Compiler.Generator
 
         public void AddSetStack(object index, string value) 
         {
-            this.code.Add($"{ this.isFunc}Stack[" + $"{ index}] =" + $"{ value};");
+            this.code.Add($"{ this.isFunc}Stack[" + $"(int){ index}] =" + $"{ value};");
         }
 
         public void AddGetStack(object target, object index) 
         {
-            this.code.Add($"{this.isFunc}" + $"{target}" + "= Stack[" + $"{index}];");
+            this.code.Add($"{this.isFunc}" + $"{target}" + "= Stack[" + $"(int){index}];");
         }
 
         public void AddSetHeap(object index, object value) 
@@ -106,6 +167,25 @@ namespace PascalCompiler.Compiler.Generator
             this.code.Add($"{this.isFunc}" + $"{ id}();");
         }
 
+        public void AddBegin(string id)
+        {
+            this.code.Add("\rvoid " + $"{ id}() \n");
+            this.code.Add("{");
+        }
+
+        public void AddEnd() 
+        {
+            this.code.Add("}");
+        }
+
+        public void AddTemp(string temp)
+        {
+            if (!this.tempStorage.Contains(temp)) 
+            {
+                this.tempStorage.Add(temp);
+            }
+        }
+
         public void AddPrint(string format, object value) 
         {
             this.code.Add($"{this.isFunc}printf(\"%" + $"{format}\"" + "," + $"{value});");
@@ -136,6 +216,11 @@ namespace PascalCompiler.Compiler.Generator
         public void AddNextEnv(int size)
         {
             this.code.Add($"{ this.isFunc}p = p + " + $"{size};");
+        }
+
+        public void AddAntEnv(int size)
+        {
+            this.code.Add($"{ this.isFunc}p = p - " + $"{ size};");
         }
 
         public void addAntEnv(int size)
@@ -182,6 +267,16 @@ namespace PascalCompiler.Compiler.Generator
             return this.label;
         }
 
+        public HashSet<string> GetTempStorage() 
+        {
+            return this.tempStorage;
+        }
+
+        public void ClearTempStorage() 
+        {
+            this.tempStorage.Clear();
+        }
+
         public void ExportC3D()
         {
             string path = "C3D.txt";
@@ -191,11 +286,13 @@ namespace PascalCompiler.Compiler.Generator
                 {
                     if (!File.Exists(path))
                     {
-                        File.WriteAllText(path, input + System.Environment.NewLine);
+                        if(!input.Contains("goto ;"))
+                            File.WriteAllText(path, input + System.Environment.NewLine);
                     }
                     else
                     {
-                        File.AppendAllText(path, input + System.Environment.NewLine);
+                        if (!input.Contains("goto ;"))
+                            File.AppendAllText(path, input + System.Environment.NewLine);
                     }
                 }
             }

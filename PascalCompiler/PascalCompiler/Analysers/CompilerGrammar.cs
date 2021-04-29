@@ -150,7 +150,7 @@ namespace PascalCompiler.Analysers
             constant_definition_part.Rule = MakePlusRule(constant_definition_part, constant_definition)
                                    | Empty;
 
-            constant_definition.Rule = CONST + declaracion + EQUAL + const_values + SEMICOLON;
+            constant_definition.Rule = CONST + identifier + COLON + tipo + EQUAL + const_values + SEMICOLON;
 
             const_values.Rule = INTEGER
                               | STRING
@@ -179,9 +179,10 @@ namespace PascalCompiler.Analysers
             procedure_declaration.Rule = PROCEDURE + identifier + LEFTPAREN + parametros + RIGHTPAREN + SEMICOLON + variable_definition_part + BEGIN + instrucciones + END + SEMICOLON
                                 | PROCEDURE + identifier + LEFTPAREN + RIGHTPAREN + SEMICOLON + variable_definition_part + BEGIN + instrucciones + END + SEMICOLON;
             procedure_declaration.ErrorRule = SyntaxError + SEMICOLON;
-
+                                          //0         1             2            3           4          5          6            7               8                     9           10        11       12
             function_declaration.Rule = FUNCTION + identifier + LEFTPAREN + parametros + RIGHTPAREN + COLON + tipo_funcion + SEMICOLON + variable_definition_part + BEGIN + instrucciones + END + SEMICOLON //{:RESULT = new Function(a, b, c, d);:}
                           | FUNCTION + identifier + LEFTPAREN + RIGHTPAREN + COLON + tipo_funcion + SEMICOLON + variable_definition_part + BEGIN + instrucciones + END + SEMICOLON; //{:RESULT = new Function(a, b, c);:}
+                              //0          1             2          3          4           5            6                7                   8          9           10       11
             function_declaration.ErrorRule = SyntaxError + SEMICOLON;
 
             parametros.Rule = MakePlusRule(parametros, parametro)

@@ -37,18 +37,32 @@ namespace PascalCompiler.Compiler.Expressions
                         return new Return(temporal, true, symbol.type, symbol);
 
                     //TODO Boolean vars
-                    //const retorno = new Retorno('', false, symbol.type, symbol);
-                    //this.trueLabel = this.trueLabel == '' ? generator.newLabel() : this.trueLabel;
-                    //this.falseLabel = this.falseLabel == '' ? generator.newLabel() : this.falseLabel;
-                    //generator.addIf(temp, '1', '==', this.trueLabel);
-                    //generator.addGoto(this.falseLabel);
-                    //retorno.trueLabel = this.trueLabel;
-                    //retorno.falseLabel = this.falseLabel;
-                    //return retorno;
+                    Return retorno = new Return("", false, symbol.type, symbol);
+                    this.trueLabel = this.trueLabel == "" ? gen.NewLabel() : this.trueLabel;
+                    this.falseLabel = this.falseLabel == "" ? gen.NewLabel() : this.falseLabel;
+                    gen.AddIf(temporal, "1", "==", this.trueLabel);
+                    gen.AddGoto(this.falseLabel);
+                    retorno.trueLabel = this.trueLabel;
+                    retorno.falseLabel = this.falseLabel;
+                    return retorno;
                 }
                 else 
                 {
-                    //TODO Not global vars
+                    string tempAux = gen.NewTemporal(); 
+                    gen.FreeTemp(tempAux);
+                    gen.AddExpression(tempAux, "p", symbol.position, "+");
+                    gen.AddGetStack(temporal, tempAux);
+                    if (symbol.type.type != Types.BOOLEAN) 
+                        return new Return(temporal, true, symbol.type, symbol);
+
+                    Return retorno = new Return("", false, symbol.type, null);
+                    this.trueLabel = this.trueLabel == "" ? gen.NewLabel() : this.trueLabel;
+                    this.falseLabel = this.falseLabel == "" ? gen.NewLabel() : this.falseLabel;
+                    gen.AddIf(temporal, "1", "==", this.trueLabel);
+                    gen.AddGoto(this.falseLabel);
+                    retorno.trueLabel = this.trueLabel;
+                    retorno.falseLabel = this.falseLabel;
+                    return retorno;
                 }
             }
             else 

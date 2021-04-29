@@ -29,7 +29,8 @@ namespace PascalCompiler.Compiler.Instructions
                 //TODO Throw semantic error, the types aren´t the same
             }
 
-            if (symbol.isGlobal) 
+            #region Deprecated Code
+            /*if (symbol.isGlobal) 
             {
                 //if (target.type.type == Types.BOOLEAN)
                 //{
@@ -73,8 +74,44 @@ namespace PascalCompiler.Compiler.Instructions
                 //}else{
                     gen.AddSetStack(target.GetValue(), value.GetValue());
                 //}
+            }*/
+            #endregion
+
+            if (symbol.isHeap || symbol == null)
+            {
+                if (target.type.type == Types.BOOLEAN)
+                {
+                    string templabel = gen.NewLabel();
+                    gen.AddLabel(value.trueLabel);
+                    gen.AddSetHeap(target.GetValue(), "1");
+                    gen.AddGoto(templabel);
+                    gen.AddLabel(value.falseLabel);
+                    gen.AddSetHeap(target.GetValue(), "0");
+                    gen.AddLabel(templabel);
+                }
+                else
+                {
+                    gen.AddSetHeap(target.GetValue(), value.GetValue());
+                }
             }
-            
+            else
+            {
+                if (target.type.type == Types.BOOLEAN)
+                {
+                    string templabel = gen.NewLabel();
+                    gen.AddLabel(value.trueLabel);
+                    gen.AddSetStack(target.GetValue(), "1");
+                    gen.AddGoto(templabel);
+                    gen.AddLabel(value.falseLabel);
+                    gen.AddSetStack(target.GetValue(), "0");
+                    gen.AddLabel(templabel);
+                }
+                else
+                {
+                    gen.AddSetStack(target.GetValue(), value.GetValue());
+                }
+            }
+
 
             return null;
         }

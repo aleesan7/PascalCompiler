@@ -17,3 +17,4 @@ C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\obj
 C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\obj\Debug\netcoreapp3.1\PascalCompiler.csprojAssemblyReference.cache
 C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\bin\Debug\netcoreapp3.1\concatProc.txt
 C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\bin\Debug\netcoreapp3.1\printStringProc.txt
+C:\Users\ka_sa\Documents\GitHub\PascalCompiler\PascalCompiler\PascalCompiler\bin\Debug\netcoreapp3.1\printStringProc_1line.txt
