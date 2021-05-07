@@ -16,7 +16,7 @@ namespace PascalCompiler.Compiler.Instructions
         {
             if (env.breakVar == null)
             {
-                //TODO throw new Error(this.line, this.column, 'Semantico', 'Break en un ambito incorrecto');
+                throw new PascalError(this.line, this.column, "Se encontro un break en un ambito incorrecto.", "Semantico");
             }
 
             Generator.Generator.GetInstance().AddGoto(env.breakVar);

@@ -26,7 +26,7 @@ namespace PascalCompiler.Compiler.Expressions
 
                 if(symbol== null) 
                 {
-                    //TODO Throw semantic error: the variable doesn´t exist
+                    throw new PascalError(this.line, this.column, "La variable '" + this.id + "' no existe.", "Semantico");
                 }
                 string temporal = gen.NewTemporal();
 
@@ -36,7 +36,6 @@ namespace PascalCompiler.Compiler.Expressions
                     if (symbol.type.type != Types.BOOLEAN)
                         return new Return(temporal, true, symbol.type, symbol);
 
-                    //TODO Boolean vars
                     Return retorno = new Return("", false, symbol.type, symbol);
                     this.trueLabel = this.trueLabel == "" ? gen.NewLabel() : this.trueLabel;
                     this.falseLabel = this.falseLabel == "" ? gen.NewLabel() : this.falseLabel;

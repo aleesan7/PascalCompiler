@@ -33,8 +33,7 @@ namespace PascalCompiler.Compiler.Expressions
                 return ret;
             }
 
-            return null;
-            //TODO throw new Error(this.line, this.column, 'Semantico',`No se puede Not del tipo ${ value.type.type }`);
+            throw new PascalError(this.line, this.column, "No se puede realizar la operacion NOT. " + $"NOT {value.type.type}", "Semantico");
         }
     }
 }

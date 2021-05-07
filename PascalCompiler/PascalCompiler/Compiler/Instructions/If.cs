@@ -48,7 +48,7 @@ namespace PascalCompiler.Compiler.Instructions
             }
             else 
             {
-                //TODO throw new Error(this.line,this.column,'Semantico',`La condicion no es booleana: ${condition?.type.type}`);
+                throw new PascalError(this.line, this.column, "La condicion del if no es de tipo booleano: " + $"{cond.type.type}", "Semantico");
             }
 
             return null;

@@ -15,7 +15,7 @@ namespace PascalCompiler.Compiler.Instructions
         {
             if (env.continueVar == null)
             {
-                //TODO throw new Error(this.line, this.column, 'Semantico', 'Continue en un ambito incorrecto');
+                throw new PascalError(this.line, this.column, "Se encontro un continue en un ambito incorrecto.", "Semantico");
             }
 
             Generator.Generator.GetInstance().AddGoto(env.continueVar);

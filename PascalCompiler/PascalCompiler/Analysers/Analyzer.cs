@@ -15,7 +15,9 @@ namespace PascalCompiler.Analysers
     class Analyzer
     {
         public bool syntacticErrorsFound = false;
+        public bool semanticErrorsFound = false;
         public List<string> code = new List<string>();
+        public Compiler.Environment globalEnv = null;
 
         public void Analyze(string input)
         {
@@ -62,6 +64,8 @@ namespace PascalCompiler.Analysers
             List<string> generatedCode = gen.GetCode();
             List<string> generatedFuncCode = new List<string>();
 
+            this.globalEnv = global;
+
             this.code.Add("#include <stdio.h>");
             this.code.Add("float Heap[100000];");
             this.code.Add("float Stack[100000];");
@@ -76,14 +80,30 @@ namespace PascalCompiler.Analysers
 
             foreach (var variable in variableDeclaration) 
             {
-                variable.Compile(global);
+                try 
+                {
+                    variable.Compile(global);
+                }
+                catch(PascalError err) 
+                {
+                    WriteError(err.GetMesage());
+                    this.semanticErrorsFound = true;
+                }
             }
 
             gen.funcCodeStartIndex = gen.GetCode().Count;
 
             foreach(var funcOrProc in functionAndProcedureDeclaration) 
             {
-                funcOrProc.Compile(global);
+                try
+                {
+                    funcOrProc.Compile(global);
+                }
+                catch (PascalError err)
+                {
+                    WriteError(err.GetMesage());
+                    this.semanticErrorsFound = true;
+                }
             }
 
             gen.funcCodeEndIndex = gen.GetCode().Count;
@@ -94,7 +114,16 @@ namespace PascalCompiler.Analysers
 
             foreach (var instruction in instructionsList) 
             {
-                instruction.Compile(global);
+                try 
+                {
+                    instruction.Compile(global);
+                }
+                catch (PascalError err)
+                {
+                    WriteError(err.GetMesage());
+                    this.semanticErrorsFound = true;
+                }
+                
             }
 
             int tempQty = gen.GetTempAmount();
@@ -119,10 +148,6 @@ namespace PascalCompiler.Analysers
             this.code.Add("int main()");
             this.code.Add("{");
 
-            //foreach (string code in generatedCode) 
-            //{
-            //    this.code.Add(code);
-            //}
             this.code.AddRange(generatedCode);
 
             this.code.Add("return 0;");
@@ -133,6 +158,48 @@ namespace PascalCompiler.Analysers
             gen.ExportC3D();
 
             gen.ResetGenerator();
+
+            if (HasErrors()) 
+            {
+                this.semanticErrorsFound = true;
+            }
+        }
+
+        private bool HasErrors()
+        {
+            bool errorsFound = false;
+            string fileName = "SemanticErrors.txt";
+            FileInfo fi = new FileInfo(fileName);
+
+            if (fi.Exists) 
+            {
+                if (fi.Length > 0) 
+                {
+                    errorsFound = false;
+                }
+            }
+
+            return errorsFound;
+        }
+
+        private void WriteError(string error)
+        {
+            string path = "SemanticErrors.txt";
+            try
+            {
+                if (!File.Exists(path))
+                {
+                    File.WriteAllText(path, error + System.Environment.NewLine);
+                }
+                else
+                {
+                    File.AppendAllText(path, error + System.Environment.NewLine);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
 
         public void SetNativeProcs()
@@ -225,7 +292,7 @@ namespace PascalCompiler.Analysers
                     if (actual.ChildNodes.Count == 5)
                     {
                         //Var declaration without explicit value specified (We assign a default value depending the type)
-                        return new Declare(new Compiler.Type(GetVarType(actual.ChildNodes[3].ChildNodes[0].Token.Text), null), newLiteralWithDefaultValue(actual.ChildNodes[3]), idList(actual.ChildNodes[1]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                        return new Declare(new Compiler.Type(GetVarType(actual.ChildNodes[3].ChildNodes[0].Token.Text), null), newLiteralWithDefaultValue(actual.ChildNodes[3]), false, idList(actual.ChildNodes[1]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
                         //return new Declare(actual.ChildNodes[1].ChildNodes[0].Token.Text.ToString(), expression(actual.ChildNodes[3]), new Interpreter.Type(GetVarType(actual.ChildNodes[1].ChildNodes[2].ChildNodes[0].Token.Text), null), false, actual.ChildNodes[1].ChildNodes[0].Span.Location.Line, actual.ChildNodes[1].ChildNodes[0].Span.Location.Column);
                     }
                     else
@@ -252,14 +319,14 @@ namespace PascalCompiler.Analysers
                             List<string> singleId = new List<string>();
                             singleId.Add(actual.ChildNodes[1].Token.Text);
 
-                            return new Declare(new Compiler.Type(GetVarType(actual.ChildNodes[3].ChildNodes[0].Token.Text), null), expression(actual.ChildNodes[5]), singleId, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                            return new Declare(new Compiler.Type(GetVarType(actual.ChildNodes[3].ChildNodes[0].Token.Text), null), expression(actual.ChildNodes[5]), false, singleId, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
                         }
                     }
                 case "const":
                     if (actual.ChildNodes.Count == 5)
                     {
                         //Var declaration without explicit value specified (We assign a default value depending the type)
-                        return new Declare(new Compiler.Type(GetVarType(actual.ChildNodes[3].ChildNodes[0].Token.Text), null), newLiteralWithDefaultValue(actual.ChildNodes[3]), idList(actual.ChildNodes[1]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                        return new Declare(new Compiler.Type(GetVarType(actual.ChildNodes[3].ChildNodes[0].Token.Text), null), newLiteralWithDefaultValue(actual.ChildNodes[3]), true, idList(actual.ChildNodes[1]), actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
                         //return new Declare(actual.ChildNodes[1].ChildNodes[0].Token.Text.ToString(), expression(actual.ChildNodes[3]), new Interpreter.Type(GetVarType(actual.ChildNodes[1].ChildNodes[2].ChildNodes[0].Token.Text), null), false, actual.ChildNodes[1].ChildNodes[0].Span.Location.Line, actual.ChildNodes[1].ChildNodes[0].Span.Location.Column);
                     }
                     else
@@ -286,7 +353,7 @@ namespace PascalCompiler.Analysers
                             List<string> singleId = new List<string>();
                             singleId.Add(actual.ChildNodes[1].Token.Text);
 
-                            return new Declare(new Compiler.Type(GetVarType(actual.ChildNodes[3].ChildNodes[0].Token.Text), null), expression(actual.ChildNodes[5]), singleId, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
+                            return new Declare(new Compiler.Type(GetVarType(actual.ChildNodes[3].ChildNodes[0].Token.Text), null), expression(actual.ChildNodes[5]), true, singleId, actual.ChildNodes[0].Span.Location.Line, actual.ChildNodes[0].Span.Location.Column);
                         }
                     }
                 case "instruccion_if_sup":

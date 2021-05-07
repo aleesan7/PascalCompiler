@@ -25,7 +25,7 @@ namespace PascalCompiler.Compiler.Instructions
                 FunctionSymbol funcSym = env.SearchFunction(this.id);
                 if (funcSym == null)
                 {
-                    //TODO Semantic Error throw new Error(this.line, this.column, 'Semantico',`No se encontro la funcion: ${ this.id }`);
+                    throw new PascalError(this.line, this.column, "No se encontro el procedimiento '" + this.id + "' por lo que no se puede mandar a llamar.", "Semantico");
                 }
 
                 var parameterValues = new LinkedList<Return>();

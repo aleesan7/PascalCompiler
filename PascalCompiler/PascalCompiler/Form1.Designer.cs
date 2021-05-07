@@ -34,8 +34,6 @@ namespace PascalCompiler
             this.txtOutputEditor = new System.Windows.Forms.TextBox();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.executeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.translateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.viewASTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.stStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.syntaxStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -97,28 +95,14 @@ namespace PascalCompiler
             this.executeToolStripMenuItem.Size = new System.Drawing.Size(74, 24);
             this.executeToolStripMenuItem.Text = "&Execute";
             // 
-            // translateToolStripMenuItem
-            // 
-            this.translateToolStripMenuItem.Name = "translateToolStripMenuItem";
-            this.translateToolStripMenuItem.Size = new System.Drawing.Size(82, 24);
-            this.translateToolStripMenuItem.Text = "&Translate";
-            // 
-            // viewASTToolStripMenuItem
-            // 
-            this.viewASTToolStripMenuItem.Name = "viewASTToolStripMenuItem";
-            this.viewASTToolStripMenuItem.Size = new System.Drawing.Size(81, 24);
-            this.viewASTToolStripMenuItem.Text = "&ViewAST";
-            // 
             // menuStrip1
             // 
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.executeToolStripMenuItem,
-            this.translateToolStripMenuItem,
             this.stStripMenuItem,
             this.syntaxStripMenuItem,
             this.semanticStripMenuItem2,
-            this.viewASTToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -178,8 +162,6 @@ namespace PascalCompiler
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem executeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem translateToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem viewASTToolStripMenuItem;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem stStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem syntaxStripMenuItem;

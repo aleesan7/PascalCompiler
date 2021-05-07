@@ -26,7 +26,7 @@ namespace PascalCompiler.Compiler.Expressions
 
                 if (symbol == null) 
                 {
-                    //TODO throw new Error(this.line, this.column, 'Semantico', `No existe la variable ${ this.id }`);
+                    throw new PascalError(this.line, this.column, "La variable '" + this.id + "' no existe.", "Semantico");
                 }
 
                 if (symbol.isGlobal)

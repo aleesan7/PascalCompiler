@@ -43,8 +43,7 @@ namespace PascalCompiler.Compiler.Expressions
                 return ret;
             }
 
-            return null;
-            //TODO throw new Error(this.line, this.column, 'Semantico', `No se puede And: ${ left.type.type } && ${ right.type.type}`);
+            throw new PascalError(this.line, this.column, "No se puede realizar la operacion And " + $"{left.type.type}" + " AND " + $"{right.type.type}", "Semantico");
         }
     }
 }

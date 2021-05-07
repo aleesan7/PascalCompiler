@@ -48,7 +48,6 @@ namespace PascalCompiler.Compiler.Expressions
                     return new Return(this.value.ToString(), false, new Type(Types.STRING, null), null);
                 default:
                     return null;
-                //TODO Boolean
             }
         }
     }

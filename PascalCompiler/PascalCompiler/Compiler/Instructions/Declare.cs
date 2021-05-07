@@ -10,12 +10,14 @@ namespace PascalCompiler.Compiler.Instructions
     {
         private Type type;
         private Expression value;
+        private bool isConst;
         private List<string> idList;
 
-        public Declare(Type type, Expression value, List<string> idList, int line, int column):base(line, column) 
+        public Declare(Type type, Expression value, bool isConst, List<string> idList, int line, int column):base(line, column) 
         {
             this.type = type;
             this.value = value;
+            this.isConst = isConst; 
             this.idList = idList;
         }
 
@@ -26,18 +28,18 @@ namespace PascalCompiler.Compiler.Instructions
             Return value = this.value.Compile(env);
             if(!this.SameType(this.type, value.type)) 
             {
-                //TODO Throw semantic error, the types aren´t the same
+                //throw new PascalError(this.line, this.column, "No se puede declarar la variable, tipos no coinciden.", "Semantico");
             }
 
             //this.validateType(enviorement);
 
             foreach(string id in this.idList) 
             {
-                Symbol newVar = env.AddVar(id, value.type.type == Types.NULL ? this.type : value.type, false, false);
+                Symbol newVar = env.AddVar(id, value.type.type == Types.NULL ? this.type : value.type, this.isConst, false);
 
                 if(newVar == null) 
                 {
-                    //TODO Throw new semantic error, the variable already exists
+                    throw new PascalError(this.line, this.column, "La variable '" + id + "'  ya existe.", "Semantico");
                 }
 
                 if (newVar.isGlobal) 

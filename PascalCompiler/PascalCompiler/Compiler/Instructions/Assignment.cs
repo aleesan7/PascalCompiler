@@ -26,7 +26,7 @@ namespace PascalCompiler.Compiler.Instructions
 
             if(!this.SameType(target.type, value.type)) 
             {
-                //TODO Throw semantic error, the types aren´t the same
+                throw new PascalError(0, 0, "La asignacion no se puede realizar ya que los tipos no son los mismos.", "Semantico");
             }
 
             #region Deprecated Code

@@ -41,8 +41,7 @@ namespace PascalCompiler.Compiler.Expressions
                 return ret;
             }
 
-            return null;
-            //TODO throw new Error(this.line, this.column, 'Semantico', `No se puede Or: ${ left.type.type } || ${ right.type.type}`);
+            throw new PascalError(this.line, this.column, "No se puede realizar la operacion Or " + $"{left.type.type}" + " Or " + $"{right.type.type}", "Semantico");
         }
     }
 }

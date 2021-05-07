@@ -48,8 +48,7 @@ namespace PascalCompiler.Compiler.Expressions
                 ret.falseLabel = this.falseLabel;
                 return ret;
             }
-            return null;
-            //TODO throw new Error(this.line, this.column, 'Semantico', `No se puede ${lefType} > ${rightType}`);
+            throw new PascalError(this.line, this.column, "No se puede realizar la operacion " + $"{leftType}" + " < " + $"{rightType}", "Semantico");
         }
     }
 }

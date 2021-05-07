@@ -6,8 +6,8 @@ namespace PascalCompiler.Compiler.Abstract
 {
     abstract class Instruction
     {
-        int line;
-        int column;
+        public int line;
+        public int column;
 
         protected Instruction(int line, int column)
         {

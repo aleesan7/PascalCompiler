@@ -25,7 +25,7 @@ namespace PascalCompiler.Compiler.Expressions
                 FunctionSymbol funcSym = env.SearchFunction(this.id);
                 if (funcSym == null) 
                 {
-                    //TODO Semantic Error throw new Error(this.line, this.column, 'Semantico',`No se encontro la funcion: ${ this.id }`);
+                    throw new PascalError(this.line, this.column, "La funcion '" + this.id + "' no existe.", "Semantico");
                 }
 
                 var parameterValues = new LinkedList<Return>();
@@ -79,9 +79,8 @@ namespace PascalCompiler.Compiler.Expressions
             }
 
 
-            //TODO throw new Error(this.line, this.column, 'Semantico', 'Funcion no implementada');
+            throw new PascalError(this.line, this.column, "Funcion no implementada.", "Semantico");
 
-            return null;
         }
     }
 }

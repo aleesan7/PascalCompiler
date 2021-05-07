@@ -65,6 +65,11 @@ namespace PascalCompiler.Compiler
             return null;
         }
 
+        public Dictionary<string, Symbol> GetVariables() 
+        {
+            return this.variables;
+        }
+
 
         public bool AddFunc(Function func, string uniqueId) 
         {
@@ -81,6 +86,11 @@ namespace PascalCompiler.Compiler
         public FunctionSymbol GetFunc(string id) 
         {
             return this.functions[id];
+        }
+
+        public Dictionary<string, FunctionSymbol> GetFunctions()
+        {
+            return this.functions;
         }
 
         public void SetEnvironmentFunc(string prop, FunctionSymbol actualFunc, string ret) 
