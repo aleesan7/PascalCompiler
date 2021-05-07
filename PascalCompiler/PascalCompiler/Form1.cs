@@ -62,7 +62,7 @@ namespace PascalCompiler
                     "</td>" +
                     "<td>" + "Global" +
                     "</td>" +
-                    "<td>" + function.Value.size +
+                    "<td>" + ((function.Value.type.type.ToString().ToLower().Equals("void")) ? function.Value.size : function.Value.size+1) +
                     "</td>" +
                     "</tr>";
             }
