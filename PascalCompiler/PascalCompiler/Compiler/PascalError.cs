@@ -20,7 +20,7 @@ namespace PascalCompiler.Compiler
             this.type = type;
         }
 
-        public string GetMesage()
+        public string GetMessage()
         {
             return this.message;
         }

@@ -18,6 +18,7 @@ namespace PascalCompiler.Analysers
         public bool semanticErrorsFound = false;
         public List<string> code = new List<string>();
         public Compiler.Environment globalEnv = null;
+        public List<PascalCompiler.Compiler.PascalError> errorsList = new List<PascalCompiler.Compiler.PascalError>();
 
         public void Analyze(string input)
         {
@@ -86,7 +87,8 @@ namespace PascalCompiler.Analysers
                 }
                 catch(PascalError err) 
                 {
-                    WriteError(err.GetMesage());
+                    WriteError(err.GetMessage());
+                    this.errorsList.Add(err);
                     this.semanticErrorsFound = true;
                 }
             }
@@ -101,7 +103,8 @@ namespace PascalCompiler.Analysers
                 }
                 catch (PascalError err)
                 {
-                    WriteError(err.GetMesage());
+                    WriteError(err.GetMessage());
+                    this.errorsList.Add(err);
                     this.semanticErrorsFound = true;
                 }
             }
@@ -120,7 +123,8 @@ namespace PascalCompiler.Analysers
                 }
                 catch (PascalError err)
                 {
-                    WriteError(err.GetMesage());
+                    WriteError(err.GetMessage());
+                    this.errorsList.Add(err);
                     this.semanticErrorsFound = true;
                 }
                 

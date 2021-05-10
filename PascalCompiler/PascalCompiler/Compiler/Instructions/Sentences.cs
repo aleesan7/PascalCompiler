@@ -34,7 +34,7 @@ namespace PascalCompiler.Compiler.Instructions
                 catch (PascalError err) 
                 {
                     //TODO new Semantic PascalError
-                    this.errorsList.AddLast(err.GetMesage());
+                    this.errorsList.AddLast(err.GetMessage());
                 }
             }
 
