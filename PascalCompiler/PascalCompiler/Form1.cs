@@ -136,7 +136,8 @@ namespace PascalCompiler
 
 
                 errors += "</table> </body> </html>";
-                using (StreamWriter outputFile = new StreamWriter("SemanticErrorsReport.html"))
+                FileStream fs = new FileStream("SemanticErrorsReport.html", FileMode.Create);
+                using (StreamWriter outputFile = new StreamWriter(fs))
                 {
                     outputFile.WriteLine(errors);
                 }
