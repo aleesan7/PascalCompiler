@@ -116,23 +116,22 @@ namespace PascalCompiler
         {
             string errors = "<html>\n <body> <h2>Pascal Compiler Errors</h2> <table style=\"width:100%\" border=\"1\"> <tr> <th>Type</th> <th>Error Description</th> <th>row</th> <th>column</th></tr> \n";
 
-            if (File.Exists("SemanticErrors.txt"))
+        
+            // Read a text file line by line.  
+            foreach (PascalCompiler.Compiler.PascalError error in errorsList)
             {
-                // Read a text file line by line.  
-                foreach (PascalCompiler.Compiler.PascalError error in errorsList)
-                {
-                    errors += "<tr>" +
-                        "<td>" + error.GetType() +
-                        "</td>" +
-                        "<td>" + error.GetMessage() +
-                        "</td>" +
-                        "<td>" + error.GetLine() +
-                        "</td>" +
-                        "<td>" + error.GetColumn() +
-                        "</td>" +
-                        "</tr>";
-                }
+                errors += "<tr>" +
+                    "<td>" + error.GetType() +
+                    "</td>" +
+                    "<td>" + error.GetMessage() +
+                    "</td>" +
+                    "<td>" + error.GetLine() +
+                    "</td>" +
+                    "<td>" + error.GetColumn() +
+                    "</td>" +
+                    "</tr>";
             }
+            
 
             errors += "</table> </body> </html>";
             using (StreamWriter outputFile = new StreamWriter("SemanticErrorsReport.html"))
